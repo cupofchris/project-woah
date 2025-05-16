@@ -7,12 +7,15 @@ export class typescript_skywrath_mage_arcane_bolt extends BaseAbility
     sound_impact: string = "Hero_SkywrathMage.ArcaneBolt.Impact";
     projectile_arcane_bolt: string = "particles/units/heroes/hero_skywrath_mage/skywrath_mage_arcane_bolt.vpcf";
 
+
     OnSpellStart()
     {
         const target = this.GetCursorTarget();
         const bolt_speed = this.GetSpecialValueFor("bolt_speed");
         const bolt_vision = this.GetSpecialValueFor("bolt_vision");
 
+        EmitSoundOn(this.sound_cast, this.GetCaster());
+        
         ProjectileManager.CreateTrackingProjectile(
         {
             Ability: this,
@@ -36,5 +39,25 @@ export class typescript_skywrath_mage_arcane_bolt extends BaseAbility
         const bolt_damage = this.GetSpecialValueFor("bolt_damage");
         const int_multiplier = this.GetSpecialValueFor("int_multiplier");
         const vision_duration = this.GetSpecialValueFor("vision_duration");
+
+        EmitSoundOn(this.sound_impact, this.GetCaster());
+        
+        AddFOWViewer(this.GetCaster().GetTeamNumber(), location, bolt_vision, vision_duration, false);
+
+        let damage = bolt_damage;
+        if (this.GetCaster().IsHero())
+        {
+            damage += (this.GetCaster() as CDOTA_BaseNPC_Hero).GetIntellect(false) * int_multiplier;
+        }
+
+        ApplyDamage(
+        {
+            attacker: this.GetCaster(),
+            damage: damage,
+            damage_type: DamageTypes.MAGICAL,
+            victim: target,
+            ability: this,
+            damage_flags: DamageFlag.NONE
+        });
     }
 }
